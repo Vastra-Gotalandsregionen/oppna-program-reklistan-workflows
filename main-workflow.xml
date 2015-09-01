@@ -1,11 +1,14 @@
 <?xml version="1.0"?>
 <workflow-definition xmlns="urn:liferay.com:liferay-workflow_6.2.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="urn:liferay.com:liferay-workflow_6.2.0 http://www.liferay.com/dtd/liferay-workflow-definition_6_2_0.xsd">
 	<name>REK Workflow</name>
-	<description/>
+	<description>
+	</description>
 	<version>1</version>
 	<state>
 		<name>start</name>
-		<metadata><![CDATA[{&quot;xy&quot;:[458,17]}]]></metadata>
+		<metadata>
+			<![CDATA[{"xy":[811,260]}]]>
+		</metadata>
 		<initial>true</initial>
 		<transitions>
 			<transition>
@@ -15,29 +18,50 @@
 			</transition>
 		</transitions>
 	</state>
+	<state>
+		<name>approved</name>
+		<metadata>
+			<![CDATA[{"xy":[993,435]}]]>
+		</metadata>
+		<actions>
+			<action>
+				<name>approve</name>
+				<script>
+					<![CDATA[import com.liferay.portal.kernel.workflow.WorkflowStatusManagerUtil;
+									import com.liferay.portal.kernel.workflow.WorkflowConstants;
+					
+									WorkflowStatusManagerUtil.updateStatus(WorkflowConstants.toStatus("approved"), workflowContext);]]>
+				</script>
+				<script-language>groovy</script-language>
+				<execution-type>onEntry</execution-type>
+			</action>
+		</actions>
+	</state>
 	<task>
 		<name>selectpath</name>
-		<metadata><![CDATA[{&quot;xy&quot;:[445,182]}]]></metadata>
+		<metadata>
+			<![CDATA[{"xy":[608,145]}]]>
+		</metadata>
 		<actions>
-            <notification>
-                <name>Review Notification</name>
-                <template>Skicka den här rätt nu</template>
-                <template-language>freemarker</template-language>
-                <notification-type>user-notification</notification-type>
-                <execution-type>onAssignment</execution-type>
-            </notification>
-        </actions>
+			<notification>
+				<name>Review Notification</name>
+				<template>Artikel väntar på att skickas för granskning</template>
+				<template-language>freemarker</template-language>
+				<notification-type>user-notification</notification-type>
+				<execution-type>onAssignment</execution-type>
+			</notification>
+		</actions>
 		<assignments>
 			<user/>
 		</assignments>
 		<transitions>
 			<transition>
-				<name>submitreview</name> 
+				<name>Skicka till terapigruppen</name>
 				<target>review</target>
-				<default>false</default>
+				<default>true</default>
 			</transition>
 			<transition>
-				<name>submitcommittee</name>
+				<name>Skicka till läkemedelskommitten</name>
 				<target>committeereview</target>
 				<default>false</default>
 			</transition>
@@ -45,51 +69,54 @@
 	</task>
 	<task>
 		<name>review</name>
-		<metadata><![CDATA[{&quot;xy&quot;:[278,349]}]]></metadata>
+		<metadata>
+			<![CDATA[{"xy":[393,312]}]]>
+		</metadata>
 		<actions>
-            <notification>
-                <name>Review Notification</name>
-                <template>Nu är det dags att granska den här.</template>
-                <template-language>freemarker</template-language>
-                <notification-type>email</notification-type>
-                <notification-type>user-notification</notification-type>
-                <execution-type>onAssignment</execution-type>
-            </notification>
-        </actions>
+			<notification>
+				<name>Review Notification</name>
+				<template>Artikel väntar på att granskas av terapigruppen.</template>
+				<template-language>freemarker</template-language>
+				<notification-type>user-notification</notification-type>
+				<execution-type>onAssignment</execution-type>
+			</notification>
+		</actions>
 		<assignments>
 			<scripted-assignment>
-				<script><![CDATA[
-				import com.liferay.portal.kernel.util.GetterUtil;
-				import com.liferay.portal.kernel.workflow.WorkflowConstants;
-				import com.liferay.portal.service.RoleLocalServiceUtil;
-				import com.liferay.portlet.expando.model.ExpandoTableConstants;
-				import com.liferay.portlet.expando.model.ExpandoValue;
-				import com.liferay.portlet.expando.service.ExpandoValueLocalServiceUtil;
-
-		        long companyId = GetterUtil.getLong((String) workflowContext.get(WorkflowConstants.CONTEXT_COMPANY_ID));
-			    String className = (String) workflowContext.get(WorkflowConstants.CONTEXT_ENTRY_CLASS_NAME);
-			    long classPK = GetterUtil.getLong((String) workflowContext.get(WorkflowConstants.CONTEXT_ENTRY_CLASS_PK));
-
-			    ExpandoValue expandoValue = ExpandoValueLocalServiceUtil.getValue(
-			            companyId,
-			            className,
-			            ExpandoTableConstants.DEFAULT_TABLE_NAME,
-			            "reviewer-role",
-			            classPK
-			    );
-
-			    String roleName = expandoValue.getString();
-
-			    roles = Collections.singletonList(RoleLocalServiceUtil.getRole(companyId, roleName));
-				user = null;
-
-				]]></script>
+				<script>
+					<![CDATA[
+									import com.liferay.portal.kernel.util.GetterUtil;
+									import com.liferay.portal.kernel.workflow.WorkflowConstants;
+									import com.liferay.portal.service.RoleLocalServiceUtil;
+									import com.liferay.portlet.expando.model.ExpandoTableConstants;
+									import com.liferay.portlet.expando.model.ExpandoValue;
+									import com.liferay.portlet.expando.service.ExpandoValueLocalServiceUtil;
+					
+							        long companyId = GetterUtil.getLong((String) workflowContext.get(WorkflowConstants.CONTEXT_COMPANY_ID));
+								    String className = (String) workflowContext.get(WorkflowConstants.CONTEXT_ENTRY_CLASS_NAME);
+								    long classPK = GetterUtil.getLong((String) workflowContext.get(WorkflowConstants.CONTEXT_ENTRY_CLASS_PK));
+					
+								    ExpandoValue expandoValue = ExpandoValueLocalServiceUtil.getValue(
+								            companyId,
+								            className,
+								            ExpandoTableConstants.DEFAULT_TABLE_NAME,
+								            "reviewer-role",
+								            classPK
+								    );
+					
+								    String roleName = expandoValue.getString();
+					
+								    roles = Collections.singletonList(RoleLocalServiceUtil.getRole(companyId, roleName));
+									user = null;
+					
+									]]>
+				</script>
 				<script-language>groovy</script-language>
 			</scripted-assignment>
 		</assignments>
 		<transitions>
 			<transition>
-				<name>reviewdone</name>
+				<name>Granskningen är klar</name>
 				<target>selectpath</target>
 				<default>true</default>
 			</transition>
@@ -97,18 +124,18 @@
 	</task>
 	<task>
 		<name>committeereview</name>
-		<metadata><![CDATA[{&quot;xy&quot;:[621,351]}]]></metadata>
+		<metadata>
+			<![CDATA[{"xy":[549,328]}]]>
+		</metadata>
 		<actions>
-            <notification>
-                <name>Committee Review Notification</name>
-                <template>${userName} tycker att det är färdigt nu.</template>
-                <template-language>freemarker</template-language>
-                <notification-type>email</notification-type>
-                <notification-type>user-notification</notification-type>
-                <execution-type>onAssignment</execution-type>
-            </notification>
-        </actions>
-
+			<notification>
+				<name>Committee Review Notification</name>
+				<template>Artikel väntar på att granskas av Läkemedelskommitten.</template>
+				<template-language>freemarker</template-language>
+				<notification-type>user-notification</notification-type>
+				<execution-type>onAssignment</execution-type>
+			</notification>
+		</actions>
 		<assignments>
 			<roles>
 				<role>
@@ -120,34 +147,15 @@
 		</assignments>
 		<transitions>
 			<transition>
-				<name>committeereject</name>
+				<name>Skicka tillbaka till terapigruppen</name>
 				<target>selectpath</target>
 				<default>true</default>
 			</transition>
 			<transition>
-				<name>approve</name>
+				<name>Publicera på webbsida och app</name>
 				<target>approved</target>
 				<default>false</default>
 			</transition>
 		</transitions>
 	</task>
-
-	<state>
-		<name>approved</name>
-		<metadata><![CDATA[{&quot;xy&quot;:[469,490]}]]></metadata>
-		<actions>
-			<action>
-				<name>approve</name>
-				<script><![CDATA[
-				import com.liferay.portal.kernel.workflow.WorkflowStatusManagerUtil;
-				import com.liferay.portal.kernel.workflow.WorkflowConstants;
-
-				WorkflowStatusManagerUtil.updateStatus(WorkflowConstants.toStatus("approved"), workflowContext);
-				]]></script>
-				<script-language>groovy</script-language>
-				<execution-type>onEntry</execution-type>
-			</action>
-		</actions>
-	</state>
-
 </workflow-definition>
