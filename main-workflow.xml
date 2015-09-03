@@ -156,6 +156,11 @@
 				<target>approved</target>
 				<default>false</default>
 			</transition>
+			<transition>
+				<name>Återremittera till läkemedelskommitten</name>
+				<target>committeereview</target>
+				<default>false</default>
+			</transition>
 		</transitions>
 	</task>
 </workflow-definition>
